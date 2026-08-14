@@ -372,13 +372,8 @@ resource "aws_iam_role_policy" "cluster_autoscaler" {
 })
 }
 
-resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
-  role       = aws_iam_role.cluster_autoscaler.name
-  policy_arn = aws_iam_policy.cluster_autoscaler.arn
-}
-
 resource "aws_eks_pod_identity_association" "cluster_autoscaler" {
-  cluster_name    = aws_eks_cluster.cluster_autoscaler.name
+  cluster_name    = module.eks.cluster_name
   namespace       = "kube-system"
   service_account = "cluster-autoscaler"
   role_arn        = aws_iam_role.cluster_autoscaler.arn
