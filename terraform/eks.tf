@@ -14,6 +14,7 @@ module "eks" {
     vpc-cni = {
       before_compute = true
     }
+    aws-ebs-csi-driver = {}
   }
 
   # Optional
@@ -26,7 +27,7 @@ module "eks" {
   # Worker plane
   subnet_ids = module.vpc.private_subnets
   # Control plane
-  control_plane_subnet_ids = module.vpc.public_subnets
+  control_plane_subnet_ids = module.vpc.private_subnets
 
   # EKS Managed Node Group(s)
   eks_managed_node_groups = {
