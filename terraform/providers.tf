@@ -1,4 +1,5 @@
 terraform {
+  required_version = ">= 1.4"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -8,10 +9,5 @@ terraform {
 }
 
 provider "aws" {
-  # Configuration options
-}
-
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "6.6.1"
+  region = "us-east-1"
 }
