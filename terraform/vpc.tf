@@ -39,4 +39,5 @@ module "vpc" {
     "kubernetes.io/role/internal-elb"  = "1"
     "kubernetes.io/cluster/my-cluster" = "shared"
   }
+  tags = local.common_tags
 }

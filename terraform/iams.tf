@@ -12,6 +12,7 @@ resource "aws_iam_role" "ebs_csi" {
       Action = ["sts:AssumeRole", "sts:TagSession"]
     }]
   })
+  tags = local.common_tags
 }
 
 resource "aws_iam_role_policy_attachment" "ebs_csi" {
@@ -38,6 +39,7 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
       Action    = ["sts:AssumeRole", "sts:TagSession"]
     }]
   })
+  tags = local.common_tags
 }
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
@@ -327,6 +329,7 @@ resource "aws_iam_role" "cluster_autoscaler" {
       },
     ]
   })
+  tags = local.common_tags
 }
 
 resource "aws_iam_role_policy" "cluster_autoscaler" {
