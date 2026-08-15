@@ -1,9 +1,9 @@
 variable "environment" {
-  type        = string
-  default     = "dev"
+  type    = string
+  default = "dev"
 }
 
 variable "project" {
-  type = string
+  type    = string
   default = "java"
 }
