@@ -6,7 +6,7 @@ terraform {
       version = "6.59.0"
     }
     helm = {
-      source = "hashicorp/helm"
+      source  = "hashicorp/helm"
       version = "3.2.0"
     }
   }

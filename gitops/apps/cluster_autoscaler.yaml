@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aws-load-balancer-controller
+  name: cluster-autoscaler
   namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
@@ -11,15 +11,16 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://aws.github.io/eks-charts
-    chart: aws-load-balancer-controller
-    targetRevision: 3.5.0 
+    repoURL: https://kubernetes.github.io/autoscaler
+    chart: cluster-autoscaler
+    targetRevision: 9.59.0
     helm:
       values: 
-        clusterName: my-cluster
+        autoDiscovery:
+         clusterName: my-cluster
         serviceAccount: 
           create: true
-          name: aws-load-balancer-controller
+          name: cluster-autoscaler
   syncPolicy:
     automated:
       prune: true
