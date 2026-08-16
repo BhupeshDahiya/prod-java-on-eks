@@ -21,7 +21,7 @@ spec:
         awsRegion: us-east-1
         serviceAccount:
           create: true
-          name: cluster-autoscaler-aws-cluster-autoscaler-aws-cluster-autoscaler
+          name: cluster-autoscaler
   syncPolicy:
     automated:
       prune: true
