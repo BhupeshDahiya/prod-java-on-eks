@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cluster-autoscaler
+  name: metrics-server
   namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
@@ -11,16 +11,13 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://kubernetes.github.io/autoscaler
-    chart: cluster-autoscaler
-    targetRevision: 9.59.0
+    repoURL: https://kubernetes-sigs.github.io/metrics-server/
+    chart: metrics-server
+    targetRevision: 3.13.1
     helm:
       values: 
-        autoDiscovery:
-          clusterName: my-cluster
-        serviceAccount: 
-          create: true
-          name: cluster-autoscaler
+        args:
+          - --kubelet-insecure-tls
   syncPolicy:
     automated:
       prune: true
