@@ -16,7 +16,9 @@ spec:
     targetRevision: 3.5.0 
     helm:
       values: |
-        clusterName: my-cluster
+        clusterName: ${cluster_name}
+        vpcId: ${vpc_id}
+        region: us-east-1
         serviceAccount:
           create: true
           name: aws-load-balancer-controller

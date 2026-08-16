@@ -20,7 +20,7 @@ spec:
           clusterName: my-cluster
         serviceAccount:
           create: true
-          name: cluster-autoscaler
+          name: cluster-autoscaler-aws-cluster-autoscaler
   syncPolicy:
     automated:
       prune: true
