@@ -15,9 +15,9 @@ spec:
     chart: aws-load-balancer-controller
     targetRevision: 3.5.0 
     helm:
-      values: 
+      values: |
         clusterName: my-cluster
-        serviceAccount: 
+        serviceAccount:
           create: true
           name: aws-load-balancer-controller
   syncPolicy:

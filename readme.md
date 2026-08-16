@@ -37,3 +37,8 @@ kubectl get svc argocd-server -n argocd -o=jsonpath='{.status.loadBalancer.ingre
 ```bash
 argocd admin initial-password -n argocd
 ```
+
+## Apply root app to cluster
+```bash
+kubectl apply -f "gitops/app of apps/root.yaml"
+```

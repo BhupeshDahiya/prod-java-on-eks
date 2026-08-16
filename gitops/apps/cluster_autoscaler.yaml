@@ -15,10 +15,10 @@ spec:
     chart: cluster-autoscaler
     targetRevision: 9.59.0
     helm:
-      values: 
+      values: |
         autoDiscovery:
           clusterName: my-cluster
-        serviceAccount: 
+        serviceAccount:
           create: true
           name: cluster-autoscaler
   syncPolicy:

@@ -15,7 +15,7 @@ spec:
     chart: metrics-server
     targetRevision: 3.13.1
     helm:
-      values: 
+      values: |
         args:
           - --kubelet-insecure-tls
   syncPolicy:
