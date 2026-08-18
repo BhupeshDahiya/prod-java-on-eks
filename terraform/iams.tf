@@ -434,7 +434,7 @@ resource "aws_iam_role_policy" "github_actions" {
           "ecr:CompleteLayerUpload",
           "ecr:PutImage"
         ]
-        Resource = module.ecr.aws_ecr_repository.app.arn
+        Resource = aws_ecr_repository.java_demo_app.arn
       },
       {
         Effect = "Allow"
