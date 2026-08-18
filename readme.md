@@ -18,6 +18,11 @@ terraform destroy -var-file="environments/prod.tfvars"
 aws eks update-kubeconfig --region <REGION_CODE> --name <CLUSTER_NAME>
 ```
 
+## Apply root app to cluster
+```bash
+kubectl apply -f "gitops/app of apps/root.yaml"
+```
+
 ## To tunnel to your EKS
 ```bash
 # kubectl port-forward -n "${NAMESPACE}" svc/${SERVICE} ${LOCAL_PORT}:${REMOTE_PORT}
@@ -36,11 +41,6 @@ kubectl get svc argocd-server -n argocd -o=jsonpath='{.status.loadBalancer.ingre
 ## To get password 
 ```bash
 argocd admin initial-password -n argocd
-```
-
-## Apply root app to cluster
-```bash
-kubectl apply -f "gitops/app of apps/root.yaml"
 ```
 
 ## For AWS ALB vpcID

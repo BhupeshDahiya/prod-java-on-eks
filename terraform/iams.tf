@@ -403,7 +403,7 @@ resource "aws_iam_role" "github_actions" {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
         }
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:BhupeshDahiya/Demo_Java_App:*"
+          "token.actions.githubusercontent.com:sub" = "repo:BhupeshDahiya/Demo_Java_app:*"
         }
       }
     }]
