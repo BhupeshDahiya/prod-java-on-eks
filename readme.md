@@ -46,3 +46,8 @@ kubectl apply -f "gitops/app of apps/root.yaml"
 ## For AWS ALB vpcID
 
 We know that ArgoCD manages the app deployments but some controllers like LBC need infrastructure values like VPC ID that only exist after Terraform runs. I solved this by having Terraform render the ArgoCD Application manifests from templates, so the GitOps repo always has the correct values after every apply.
+
+## Destory order
+```bash
+kubectl delete namespace argocd --force
+```
