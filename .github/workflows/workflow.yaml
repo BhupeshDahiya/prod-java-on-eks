@@ -4,7 +4,7 @@ on:
     branches: [main]
 permissions:
   id-token: write
-  contents: read
+  contents: write
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -41,17 +41,24 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      - name: Install kubectl
-        run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          mkdir -p ~/.local/bin
-          mv ./kubectl ~/.local/bin/kubectl
-          
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig --name my-cluster --region us-east-1
+      - name: Checkout infra repo
+        uses: actions/checkout@v7
+        with:
+          repository: 'BhupeshDahiya/prod-java-on-eks'
+          token: ${{ secrets.GH_TOKEN }}
+          path: infra
 
-      - name: Deploy to eks
+      - name: Update image tag in manifest
+        env:
+          IMAGE: ${{ steps.login-ecr.outputs.registry }}/java-demo-app:${{ github.sha }}
         run: |
-          kubectl set image deployment/java-demo-app java-demo-app=${{ steps.login-ecr.outputs.registry }}/java-demo-app:${{ github.sha }}
+          sed -i "s|image:.*java-demo-app.*|image: $IMAGE|" infra/gitops/manifests/java_demo_app/deployment.yaml
+
+      - name: Commit and push
+        run: |
+          cd infra
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add gitops/manifests/java_demo_app/deployment.yaml
+          git commit -m "ci: update java-demo-app image to ${{ github.sha }}"
+          git push

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-demo-app-deployment
+  labels:
+    app: java-demo-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: java-demo-app
+  template:
+    metadata:
+      labels:
+        app: java-demo-app
+    spec:
+      containers:
+      - name: java-demo-app
+        image: 350235531576.dkr.ecr.us-east-1.amazonaws.com/java-demo-app:latest
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+
+          
