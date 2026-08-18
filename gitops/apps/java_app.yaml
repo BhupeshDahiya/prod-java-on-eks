@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: java-demo-app
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: java-demo-app
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    repoURL: https://github.com/BhupeshDahiya/prod-java-on-eks/gitops/manifests/java_demo_app/
+    targetRevision: Head
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace = true
