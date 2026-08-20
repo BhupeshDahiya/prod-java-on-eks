@@ -30,8 +30,11 @@ spec:
           ingress:
             enabled: true
             ingressClassName: nginx
-            path: /
+            path: /grafana
             pathType: Prefix
+          env:
+            GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana"
+            GF_SERVER_SERVE_FROM_SUB_PATH: "true"
   syncPolicy:
     automated:
       prune: true

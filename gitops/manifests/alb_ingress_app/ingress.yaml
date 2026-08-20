@@ -5,6 +5,8 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: instance
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: "30080"
 spec:
   ingressClassName: alb
   rules:
@@ -16,4 +18,4 @@ spec:
                 service:
                   name: ingress-nginx-controller
                   port:
-                    number: 80
+                    number: 30080
