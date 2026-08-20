@@ -51,3 +51,7 @@ We know that ArgoCD manages the app deployments but some controllers like LBC ne
 ```bash
 kubectl delete namespace argocd --force
 ```
+OR
+```bash
+kubectl delete svc java-demo-app-svc -n java-demo-app
+```
