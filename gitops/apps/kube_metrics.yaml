@@ -25,10 +25,13 @@ spec:
           enabled: false
         grafana:
           service:
+            name: grafana
             type: ClusterIP
           ingress:
             enabled: true
-            path: /grafana
+            ingressClassName: nginx
+            path: /
+            pathType: Prefix
   syncPolicy:
     automated:
       prune: true
