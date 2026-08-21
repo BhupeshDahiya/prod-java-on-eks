@@ -21,9 +21,6 @@ spec:
             enabled: true
           service:
             type: NodePort
-            nodePorts:
-              http: 30080
-        # main controller service to be of type NodePort, and let the ALB target those node ports
   syncPolicy:
     automated:
       prune: true
