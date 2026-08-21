@@ -21,6 +21,8 @@ spec:
             replicas: 1
             externalLabels:
               cluster: my-cluster
+            serviceMonitorNamespaceSelector: {}
+            serviceMonitorSelector: {}
         kubeProxy:
           enabled: false
         grafana:
@@ -41,3 +43,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
