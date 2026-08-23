@@ -48,10 +48,31 @@ argocd admin initial-password -n argocd
 We know that ArgoCD manages the app deployments but some controllers like LBC need infrastructure values like VPC ID that only exist after Terraform runs. I solved this by having Terraform render the ArgoCD Application manifests from templates, so the GitOps repo always has the correct values after every apply.
 
 ## Destory order
+# 1. Delete app namespaces to remove LBC-created resources (ALB, SGs, target groups)
+```bash
+kubectl delete namespace java-demo-app
+kubectl delete namespace ingress-nginx
+kubectl delete namespace monitoring
+```
+# 2. Wait for namespaces to fully terminate and AWS resources to be cleaned up
+```bash
+kubectl get namespaces -w
+```
+# 3. Delete ArgoCD to stop it from recreating anything
 ```bash
 kubectl delete namespace argocd --force
 ```
-OR
+# 4. Verify no load balancers or target groups remain
 ```bash
-kubectl delete svc java-demo-app-svc -n java-demo-app
+aws elbv2 describe-load-balancers --query 'LoadBalancers[*].LoadBalancerArn' --output table
+aws elbv2 describe-target-groups --query 'TargetGroups[*].TargetGroupArn' --output table
+```
+# 5. If anything remains, delete manually in console then proceed
+# EC2 → Load Balancers → delete
+# EC2 → Target Groups → delete
+# EC2 → Security Groups → delete any k8s-* ones
+
+# 6. Terraform destroy
+```bash
+terraform destroy -var-file="environments/dev.tfvars"
 ```

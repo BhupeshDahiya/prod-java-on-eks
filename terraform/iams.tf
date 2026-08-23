@@ -446,3 +446,58 @@ resource "aws_iam_role_policy" "github_actions" {
     ]
   })
 }
+
+# Pod idnentity and access management (IAM) role for the Loki
+
+resource "aws_iam_role" "loki_role" {
+  name = "loki_role"
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = ["sts:AssumeRole", "sts:TagSession"]
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role_policy" "loki_role_policy" {
+  name = "loki_role_policy"
+  role = aws_iam_role.loki_role.id
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  policy = jsonencode({
+  Version = "2012-10-17"
+  Statement = [{
+    Effect = "Allow"
+    Action = [
+      "s3:ListBucket",
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject"
+    ]
+    Resource = [
+      "arn:aws:s3:::<bucket_name>",
+      "arn:aws:s3:::<bucket_name>/*"
+    ]
+  }]
+})
+}
+
+resource "aws_eks_pod_identity_association" "loki_pod_identity_association" {
+  cluster_name    = module.eks.cluster_name
+  namespace       = "monitoring"
+  service_account = "loki-sa"
+  role_arn        = aws_iam_role.loki_role.arn
+}
