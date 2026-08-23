@@ -22,14 +22,15 @@ aws eks update-kubeconfig --region <REGION_CODE> --name <CLUSTER_NAME>
 ```bash
 kubectl apply -f "gitops/app of apps/root.yaml"
 ```
+## To access your argoCD on EKS you have 2 ways
 
-## To tunnel to your EKS
+# To tunnel to your EKS
 ```bash
 # kubectl port-forward -n "${NAMESPACE}" svc/${SERVICE} ${LOCAL_PORT}:${REMOTE_PORT}
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
-## Service Type Load Balancer to connect to eks
+# Service Type Load Balancer to connect to eks
 ```bash
 kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
 ```
@@ -56,7 +57,7 @@ kubectl delete namespace monitoring
 ```
 # 2. Wait for namespaces to fully terminate and AWS resources to be cleaned up
 ```bash
-kubectl get namespaces -w
+kubectl get namespaces
 ```
 # 3. Delete ArgoCD to stop it from recreating anything
 ```bash

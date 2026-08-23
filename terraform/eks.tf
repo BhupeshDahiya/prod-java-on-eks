@@ -3,7 +3,7 @@ module "eks" {
   version = "~> 21.0"
 
   name               = "my-cluster"
-  kubernetes_version = "1.33"
+  kubernetes_version = "1.36"
 
   addons = {
     coredns = {}
