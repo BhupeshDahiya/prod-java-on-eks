@@ -478,21 +478,21 @@ resource "aws_iam_role_policy" "loki_role_policy" {
   # Terraform's "jsonencode" function converts a
   # Terraform expression result to valid JSON syntax.
   policy = jsonencode({
-  Version = "2012-10-17"
-  Statement = [{
-    Effect = "Allow"
-    Action = [
-      "s3:ListBucket",
-      "s3:PutObject",
-      "s3:GetObject",
-      "s3:DeleteObject"
-    ]
-    Resource = [
-      "arn:aws:s3:::<bucket_name>",
-      "arn:aws:s3:::<bucket_name>/*"
-    ]
-  }]
-})
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "s3:ListBucket",
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
+      ]
+      Resource = [
+        "arn:aws:s3:::<bucket_name>",
+        "arn:aws:s3:::<bucket_name>/*"
+      ]
+    }]
+  })
 }
 
 resource "aws_eks_pod_identity_association" "loki_pod_identity_association" {
