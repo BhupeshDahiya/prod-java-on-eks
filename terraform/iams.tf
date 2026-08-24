@@ -488,8 +488,7 @@ resource "aws_iam_role_policy" "loki_role_policy" {
         "s3:DeleteObject"
       ]
       Resource = [
-        "arn:aws:s3:::<bucket_name>",
-        "arn:aws:s3:::<bucket_name>/*"
+        "arn:aws:s3:::backend-buck-tf/*",
       ]
     }]
   })
