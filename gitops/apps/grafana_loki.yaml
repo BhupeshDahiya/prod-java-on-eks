@@ -45,6 +45,11 @@ spec:
         serviceAccount:
           create: true
           name: loki-sa  
+        # Disable caches for this small/personal cluster
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
   syncPolicy:
     automated:
       prune: true
