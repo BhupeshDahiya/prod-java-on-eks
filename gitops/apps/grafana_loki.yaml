@@ -18,23 +18,20 @@ spec:
       values: |
         loki:
           storage:
+            type: s3
             bucketNames:
-              chunks: chunks
-              ruler: ruler
+              chunks: backend-buck-tf
+              ruler: backend-buck-tf
+            s3:
+              region: us-east-1
+              s3ForcePathStyle: true
+              insecure: false
           structuredConfig:
-            storage_config:
-              named_stores:
-                aws:
-                  s3-loki-chunks:
-                    endpoint: 's3.us-east-1.amazonaws.com'
-                    bucketNames: backend-buck-tf
-                    s3ForcePathStyle: true
-                    insecure: true
             schema_config:
               configs:
                 - from: "2026-05-01"
                   store: tsdb
-                  object_store: s3-loki-chunks
+                  object_store: s3
                   schema: v13
                   index:
                     prefix: index_
@@ -44,7 +41,7 @@ spec:
               enabled: true
           serviceAccount:
             create: true
-            name: loki-sa  
+            name: loki-sa
         chunksCache:
           enabled: false
           replicas: 0
