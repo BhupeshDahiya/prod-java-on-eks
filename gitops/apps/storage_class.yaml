@@ -13,7 +13,7 @@ spec:
   source:
     repoURL: https://github.com/BhupeshDahiya/prod-java-on-eks
     path: gitops/manifests/storage_class/
-    targetRevision: Head
+    targetRevision: HEAD
   syncPolicy:
     automated:
       prune: true
