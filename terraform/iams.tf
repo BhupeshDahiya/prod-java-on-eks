@@ -489,6 +489,7 @@ resource "aws_iam_role_policy" "loki_role_policy" {
       ]
       Resource = [
         "arn:aws:s3:::backend-buck-tf/*",
+        "arn:aws:s3:::backend-buck-tf"
       ]
     }]
   })
