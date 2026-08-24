@@ -16,36 +16,35 @@ spec:
     targetRevision: 18.11.0
     helm:
       values: |
-       loki:
-        storage:
-          bucketNames:
-            chunks: chunks
-            ruler: ruler
-        structuredConfig:
-          storage_config:
-            named_stores:
-              aws:
-                s3-loki-chunks:
-                  endpoint: 's3.us-east-1.amazonaws.com'
-                  bucketnames: backend-buck-tf
-                  s3forcepathstyle: true
-                  insecure: true
-          schema_config:
-            configs:
-              - from: "2026-05-01"
-                store: tsdb
-                object_store: s3-loki-chunks
-                schema: v13
-                index:
-                  prefix: index_
-                  period: 24h
-        monitoring:
-          alerts:
-            enabled: true
-        serviceAccount:
-          create: true
-          name: loki-sa  
-        # Disable caches for this small/personal cluster
+        loki:
+          storage:
+            bucketNames:
+              chunks: chunks
+              ruler: ruler
+          structuredConfig:
+            storage_config:
+              named_stores:
+                aws:
+                  s3-loki-chunks:
+                    endpoint: 's3.us-east-1.amazonaws.com'
+                    bucketNames: backend-buck-tf
+                    s3ForcePathStyle: true
+                    insecure: true
+            schema_config:
+              configs:
+                - from: "2026-05-01"
+                  store: tsdb
+                  object_store: s3-loki-chunks
+                  schema: v13
+                  index:
+                    prefix: index_
+                    period: 24h
+          monitoring:
+            alerts:
+              enabled: true
+          serviceAccount:
+            create: true
+            name: loki-sa  
         chunksCache:
           enabled: false
           replicas: 0
