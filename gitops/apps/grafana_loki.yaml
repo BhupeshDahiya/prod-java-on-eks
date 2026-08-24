@@ -48,8 +48,10 @@ spec:
         # Disable caches for this small/personal cluster
         chunksCache:
           enabled: false
+          replicas: 0
         resultsCache:
           enabled: false
+          replicas: 0
   syncPolicy:
     automated:
       prune: true
