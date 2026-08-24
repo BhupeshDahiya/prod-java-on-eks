@@ -498,6 +498,6 @@ resource "aws_iam_role_policy" "loki_role_policy" {
 resource "aws_eks_pod_identity_association" "loki_pod_identity_association" {
   cluster_name    = module.eks.cluster_name
   namespace       = "monitoring"
-  service_account = "loki-sa"
+  service_account = "loki"
   role_arn        = aws_iam_role.loki_role.arn
 }
