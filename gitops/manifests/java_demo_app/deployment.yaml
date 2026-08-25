@@ -1,11 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: java-demo-app-deployment
+  name: java-demo-app
   labels:
     app: java-demo-app
 spec:
-  replicas: 3
   selector:
     matchLabels:
       app: java-demo-app
@@ -25,7 +24,7 @@ spec:
             memory: "512Mi"
             cpu: "500m"
           limits:
-            memory: "1024Mi"
+            memory: "1Gi"
             cpu: "1000m"
 
           
