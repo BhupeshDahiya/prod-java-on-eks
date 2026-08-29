@@ -77,3 +77,7 @@ aws elbv2 describe-target-groups --query 'TargetGroups[*].TargetGroupArn' --outp
 ```bash
 terraform destroy -var-file="environments/dev.tfvars"
 ```
+or
+```bash
+terraform destroy -var-file="environments/prod.tfvars"
+```
