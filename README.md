@@ -9,7 +9,7 @@ This project demonstrates end-to-end ownership of a cloud-native platform — fr
 ## Architecture Overview
 
 ```text
-GitHub (App Repo)
+Java App (App Repo)
     │
     ▼
 GitHub Actions
@@ -230,10 +230,3 @@ Source: [BhupeshDahiya/Demo_Java_app](https://github.com/BhupeshDahiya/Demo_Java
 - Terraform plan checks in CI for this repository
 - Multiple environment promotion (dev → staging → prod)
 - Optional tracing (Tempo or AWS X-Ray)
-
----
-
-## License
-
-This project is for educational / portfolio purposes.
-```
