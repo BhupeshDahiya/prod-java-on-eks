@@ -82,7 +82,7 @@ Argo CD (App of Apps)
 | Delivery model                 | GitOps (App of Apps)           | Declarative, auditable, self-healing |
 | Compute                        | Managed Node Groups            | Required for Pod Identity Agent; simpler than self-managed nodes |
 | Ingress                        | AWS Load Balancer Controller   | Native ALB integration, better AWS experience |
-| Observability                  | Prometheus + Loki              | Industry standard, full metrics + logs |
+| Observability                  | Prometheus, Grafana & Loki     | Industry standard, full metrics & logs on dashboards |
 
 ---
 
