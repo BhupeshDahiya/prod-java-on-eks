@@ -48,6 +48,17 @@ argocd admin initial-password -n argocd
 
 We know that ArgoCD manages the app deployments but some controllers like LBC need infrastructure values like VPC ID that only exist after Terraform runs. I solved this by having Terraform render the ArgoCD Application manifests from templates, so the GitOps repo always has the correct values after every apply.
 
+## To get the ALB endpoint for the java app
+```bash
+kubectl get ingress -A
+```
+
+## For the grafana password
+```bash
+bhupe@Predator MINGW64 /d/Projects/prod-java-on-eks (main)
+$ kubectl get secret -n monitoring kube-prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode; echo
+```
+
 ## Destory order
 # 1. Delete app namespaces to remove LBC-created resources (ALB, SGs, target groups)
 ```bash
