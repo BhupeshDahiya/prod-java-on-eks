@@ -55,8 +55,7 @@ kubectl get ingress -A
 
 ## For the grafana password
 ```bash
-bhupe@Predator MINGW64 /d/Projects/prod-java-on-eks (main)
-$ kubectl get secret -n monitoring kube-prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode; echo
+kubectl get secret -n monitoring kube-prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode; echo
 ```
 
 ## Destory order

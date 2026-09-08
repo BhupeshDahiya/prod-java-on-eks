@@ -42,6 +42,24 @@ Argo CD (App of Apps)
 
 ---
 
+## Screenshots
+
+### Argo CD - All applications synced
+![Argo CD Applications](screenshots/argoCD.png)
+
+### Grafana Dashboard
+![Grafana Dashboard](screenshots/grafana_1.png)
+![Grafana Dashboard](screenshots/grafana_2.png)
+
+### HPA Scaling under load
+![HPA Scaling](screenshots/hpa.png)
+
+### Application running
+![Application Response](screenshots/app_1.png)
+![Health Response](screenshots/health.png)
+
+---
+
 ## Key Features
 
 - **Infrastructure as Code** — Terraform for VPC, EKS, ECR, IAM, and Pod Identity
