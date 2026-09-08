@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: java-demo-app
-        image: 350235531576.dkr.ecr.us-east-1.amazonaws.com/java-demo-app:5c653839a118f9217ea95595b6d759e4a2d8ded3
+        image: 350235531576.dkr.ecr.us-east-1.amazonaws.com/java-demo-app:a8964c4fd8b1378e3285480cdfdd877c76e3945d
         ports:
         - containerPort: 8080
         imagePullPolicy: IfNotPresent
