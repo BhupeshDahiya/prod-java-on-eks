@@ -104,6 +104,22 @@ Argo CD (App of Apps)
 
 ---
 
+## What I Built
+
+A complete production-style platform that continuously delivers a Spring Boot application to Amazon EKS using Infrastructure as Code and GitOps.
+
+The platform includes Terraform-managed networking and EKS, Argo CD for declarative delivery, EKS Pod Identity for secure AWS access, GitHub Actions CI/CD, HPA + Cluster Autoscaler, and observability with Prometheus, Grafana, and Loki.
+
+The application is intentionally simple so the focus remains on platform engineering and DevOps practices.
+
+## Challenges & Lessons Learned
+
+- **Destroy order matters** — Resources created by the AWS Load Balancer Controller (ALBs, target groups, security groups) must be cleaned up before `terraform destroy`, otherwise destruction can hang or leave orphaned resources.
+- **Bridging Terraform and GitOps** — Some controllers need infrastructure values (such as VPC ID) that only exist after Terraform runs. Solved by rendering Argo CD Application manifests from Terraform templates.
+- **Cost control** — EKS control plane and NAT Gateway costs add up quickly, so the environment is designed to be safely created and destroyed daily.
+
+---
+
 ## Repository Structure
 
 ```text
