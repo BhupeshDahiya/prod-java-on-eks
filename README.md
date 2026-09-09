@@ -99,7 +99,7 @@ Argo CD (App of Apps)
 | Infra vs cluster config        | Terraform + Argo CD            | Clear separation: Terraform owns cloud resources & IAM, Argo CD owns everything inside the cluster |
 | Delivery model                 | GitOps (App of Apps)           | Declarative, auditable, self-healing |
 | Compute                        | Managed Node Groups            | Required for Pod Identity Agent; simpler than self-managed nodes |
-| Ingress                        | AWS Load Balancer Controller   | Native ALB integration, better AWS experience |
+| Ingress                        | AWS ALB + NGINX Ingress        | ALB for AWS-native external entry; NGINX for in-cluster routing |
 | Observability                  | Prometheus, Grafana & Loki     | Industry standard, full metrics & logs on dashboards |
 
 ---
