@@ -28,7 +28,9 @@ resource "aws_db_instance" "postgres" {
   storage_encrypted = true
   db_name              = "postgres_db"
   engine               = "postgres"
-  engine_version       = "18.1"
+  engine_version       = "18.6"
+  username = "postgres"
+  password = random_password.db_password
   instance_class       = "db.t3.micro"
   db_subnet_group_name = aws_db_subnet_group.db-sg-grp.name
   vpc_security_group_ids = [aws_security_group.postgres_SG.id]
@@ -39,4 +41,10 @@ resource "aws_db_instance" "postgres" {
 resource "aws_db_subnet_group" "db-sg-grp" {
   name       = "postgres-db-subnet-group"
   subnet_ids = module.vpc.private_subnets
+}
+
+# DB Secret
+resource "random_password" "db_password" {
+  length  = 16
+  special = false  # avoids issues with JDBC connection strings
 }
