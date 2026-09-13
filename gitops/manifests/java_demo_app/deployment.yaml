@@ -13,9 +13,50 @@ spec:
       labels:
         app: java-demo-app
     spec:
+      initContainers:
+      - name: flyway-migrate
+        image: flyway/flyway:13.6-alpine
+        args:
+        - -url=jdbc:postgresql://$(host):$(port)/$(dbname)
+        - -user=$(username)
+        - -password=$(password)
+        - -locations=filesystem:/flyway/sql
+        - migrate
+        envFrom:
+        - secretRef:
+            name: db-secret
+        volumeMounts:
+        - name: migrations
+          mountPath: /flyway/sql
       containers:
       - name: java-demo-app
         image: 350235531576.dkr.ecr.us-east-1.amazonaws.com/java-demo-app:a8964c4fd8b1378e3285480cdfdd877c76e3945d
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-secret # Matches target.name from ESO
+              key: host
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: port
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: dbname
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
         ports:
         - containerPort: 8080
         imagePullPolicy: IfNotPresent
@@ -46,3 +87,7 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 2
           failureThreshold: 3
+      volumes:
+      - name: migrations
+        configMap:
+          name: migrations
