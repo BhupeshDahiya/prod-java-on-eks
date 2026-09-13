@@ -22,7 +22,7 @@ resource "aws_vpc_security_group_egress_rule" "allow_traffic_app" {
 }
 
 # DB
-# Secrets Manager + ESO is the right call over IAM DB auth as IAM DB auth with Spring Boot adds significant complexity (token refresh every 15 mins).
+# We are going with Secrets Manager + ESO over IAM DB auth cause IAM DB auth with Spring Boot adds significant complexity (token refresh every 15 mins or so).
 resource "aws_db_instance" "postgres" {
   allocated_storage      = 5
   storage_encrypted      = true
