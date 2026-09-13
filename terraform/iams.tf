@@ -501,3 +501,54 @@ resource "aws_eks_pod_identity_association" "loki_pod_identity_association" {
   service_account = "loki"
   role_arn        = aws_iam_role.loki_role.arn
 }
+
+# Pod idnentity and access management (IAM) role for the ESO
+
+resource "aws_iam_role" "eso_role" {
+  name = "eso_role"
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = ["sts:AssumeRole", "sts:TagSession"]
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role_policy" "eso_role_policy" {
+  name = "eso_role_policy"
+  role = aws_iam_role.eso_role.id
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "secretsmanager:GetSecretValue"
+      ]
+      Resource = [
+        aws_secretsmanager_secret.db_secrets.arn
+      ]
+    }]
+  })
+}
+
+resource "aws_eks_pod_identity_association" "eso_pod_identity_association" {
+  cluster_name    = module.eks.cluster_name
+  namespace       = "external-secrets"
+  service_account = "external-secrets-sa"
+  role_arn        = aws_iam_role.eso_role.arn
+}
