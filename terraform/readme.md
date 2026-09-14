@@ -64,6 +64,7 @@ kubectl get secret -n monitoring kube-prometheus-stack-grafana -o jsonpath="{.da
 kubectl delete namespace java-demo-app
 kubectl delete namespace ingress-nginx
 kubectl delete namespace monitoring
+kubectl delete namespace external-secrets
 ```
 # 2. Wait for namespaces to fully terminate and AWS resources to be cleaned up
 ```bash
