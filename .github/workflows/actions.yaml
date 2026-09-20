@@ -1,18 +1,28 @@
 name: CI pipeline
 on:
     push:
-        branches-ignore:
-            - main
+        branches:
+        - dev
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
     infra_validation:
         runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: terraform
         steps:
             - name: checkout code
               uses: actions/checkout@7
 
-            - name: switch to terraform directory
-              run: cd terraform
+            - name: setup Aws creds so that terraform can fetch state from s3
+              uses: aws-actions/configure-aws-credentials@v6.3.0
+              with:
+                role-to-assume: arn:aws:iam::${{ secrets.AWS_ID }}:role/github-actions-role
+                aws-region: us-east-1
 
             - name: setup terraform cli
               uses: hashicorp/setup-terraform@v4
@@ -20,12 +30,12 @@ jobs:
                 terraform_version: "1.15.3"
 
             - name: init the terraform
-              run: terraform init 
+              run: terraform init -backend-config="backends/dev.hcl"
 
             - name: format and validate the changes
               run: |
-                terraform fmt
+                terraform fmt --check
                 terraform validate
             
             - name: plan to view proposed changes
-              run: terraform plan 
+              run: terraform plan -var="environment=dev" -var="project=java"
