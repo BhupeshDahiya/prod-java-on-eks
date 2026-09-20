@@ -1,0 +1,31 @@
+name: CI pipeline
+on:
+    push:
+        branches-ignore:
+            - main
+
+jobs:
+    infra_validation:
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout code
+              uses: actions/checkout@7
+
+            - name: switch to terraform directory
+              run: cd terraform
+
+            - name: setup terraform cli
+              uses: hashicorp/setup-terraform@v4
+              with:
+                terraform_version: "1.15.3"
+
+            - name: init the terraform
+              run: terraform init 
+
+            - name: format and validate the changes
+              run: |
+                terraform fmt
+                terraform validate
+            
+            - name: plan to view proposed changes
+              run: terraform plan 
