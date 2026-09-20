@@ -6,6 +6,14 @@ This project demonstrates end-to-end ownership of a cloud-native platform — fr
 
 ---
 
+## App used to deploy
+
+The application is a Spring Boot 3 (Java 21) REST API with full Postgres CRUD and Flyway-managed schema migrations. It exposes Prometheus metrics via Spring Actuator and uses structured JSON logging for Loki ingestion.
+
+The CI/CD pipeline for the application lives in the app repository — GitHub Actions builds, tests, scans with Trivy, pushes to ECR, and automatically updates the image tag in this GitOps repo to trigger an Argo CD sync.
+
+**Application repository:** [BhupeshDahiya/Demo_Java_app](https://github.com/BhupeshDahiya/Demo_Java_app)
+
 ## Architecture Overview
 
 ```text
@@ -62,13 +70,15 @@ Argo CD (App of Apps)
 
 ## Key Features
 
-- **Infrastructure as Code** — Terraform for VPC, EKS, ECR, IAM, and Pod Identity
+- **Infrastructure as Code** — Terraform for VPC, EKS, ECR, IAM, RDS, and Pod Identity
 - **GitOps** — Argo CD with App of Apps pattern
 - **EKS Pod Identity** — Modern IAM integration (no OIDC/IRSA for workloads)
 - **CI/CD** — GitHub Actions → ECR → automated GitOps updates
 - **Autoscaling** — HPA (CPU/Memory) + Cluster Autoscaler
 - **Observability** — Prometheus, Grafana, and Loki
-- **Security** — Trivy scanning, least-privilege IAM, health probes
+- **Security** — Trivy scanning, least-privilege IAM, health probes, secrets never stored in cluster
+- **Secrets Management** — AWS Secrets Manager + External Secrets Operator syncs DB credentials into Kubernetes
+- **Managed Database** — Amazon RDS PostgreSQL with encrypted storage, Flyway migrations via init container
 - **Environment separation** — Separate Terraform backends for dev / staging / prod
 
 ---
@@ -87,6 +97,8 @@ Argo CD (App of Apps)
 | Container Registry | Amazon ECR                                      |
 | Observability      | kube-prometheus-stack + Grafana Loki            |
 | Application        | Spring Boot (Java 21)                           |
+| Database           | Amazon RDS (PostgreSQL 18.6)                    |
+| Secrets            | AWS Secrets Manager + External Secrets Operator |
 | Autoscaling        | HPA + Cluster Autoscaler                        |
 
 ---
@@ -101,6 +113,8 @@ Argo CD (App of Apps)
 | Compute                        | Managed Node Groups            | Required for Pod Identity Agent; simpler than self-managed nodes |
 | Ingress                        | AWS ALB + NGINX Ingress        | ALB for AWS-native external entry; NGINX for in-cluster routing |
 | Observability                  | Prometheus, Grafana & Loki     | Industry standard, full metrics & logs on dashboards |
+| Database                       | Amazon RDS over in-cluster PostgreSQL | Managed service, automated backups, production-grade separation of concerns |
+| Secrets management             | ESO + Secrets Manager over k8s Secrets | Encrypted at rest, auditable, no plaintext credentials in the cluster |
 
 ---
 
@@ -110,7 +124,7 @@ A complete production-style platform that continuously delivers a Spring Boot ap
 
 The platform includes Terraform-managed networking and EKS, Argo CD for declarative delivery, EKS Pod Identity for secure AWS access, GitHub Actions CI/CD, HPA + Cluster Autoscaler, and observability with Prometheus, Grafana, and Loki.
 
-The application is intentionally simple so the focus remains on platform engineering and DevOps practices.
+The application is intentionally simple so the focus remains on platform engineering and DevOps practices. It includes a full Postgres CRUD backend with Flyway-managed schema migrations, credentials injected securely via External Secrets Operator pulling from AWS Secrets Manager.
 
 ## Challenges & Lessons Learned
 
@@ -234,6 +248,7 @@ Approximate monthly cost for a small dev setup (us-east-1):
 | NAT Gateway + data         | ~$35-50      |
 | ALB                        | ~$20+        |
 | ECR + misc                 | low          |
+| RDS db.t3.micro            | ~$15         |
 
 **Tips to reduce cost:**
 - Scale the node group to 0 when not in use
@@ -244,13 +259,15 @@ Approximate monthly cost for a small dev setup (us-east-1):
 
 ## Application
 
-The demo application is a simple Spring Boot service with:
+The demo application is a Spring Boot service with Postgres CRUD and full observability:
 
 - `GET /` — status + timestamp
 - `GET /health` — health check
 - `GET /logs-test` — generates test logs
 - `GET /validate` — basic input validation
+- `POST/GET/PUT/DELETE /persons` — CRUD operations backed by RDS PostgreSQL
 - Prometheus metrics via Spring Actuator
+- Schema managed by Flyway migrations
 
 Source: [BhupeshDahiya/Demo_Java_app](https://github.com/BhupeshDahiya/Demo_Java_app)
 
@@ -258,7 +275,6 @@ Source: [BhupeshDahiya/Demo_Java_app](https://github.com/BhupeshDahiya/Demo_Java
 
 ## Future Improvements
 
-- External Secrets Operator + AWS Secrets Manager
 - NetworkPolicies / Pod Security Standards
 - AWS Budgets + cost anomaly detection
 - Terraform plan checks in CI for this repository
