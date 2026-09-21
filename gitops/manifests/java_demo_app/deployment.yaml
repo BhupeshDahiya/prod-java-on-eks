@@ -30,7 +30,7 @@ spec:
           mountPath: /flyway/sql
       containers:
       - name: java-demo-app
-        image: 350235531576.dkr.ecr.us-east-1.amazonaws.com/java-demo-app:a8964c4fd8b1378e3285480cdfdd877c76e3945d
+        image: 350235531576.dkr.ecr.us-east-1.amazonaws.com/java-demo-app:c550578a6b9470e5e7145df04d337b26db6a81b0
         env:
         - name: DB_HOST
           valueFrom:
