@@ -14,6 +14,8 @@ The CI/CD pipeline for the application lives in the app repository — GitHub Ac
 
 **Application repository:** [BhupeshDahiya/Demo_Java_app](https://github.com/BhupeshDahiya/Demo_Java_app)
 
+---
+
 ## Architecture Overview
 
 ```text
@@ -32,8 +34,10 @@ GitOps Repo (this repo)
 Argo CD (App of Apps)
     │
     ├── AWS Load Balancer Controller
+    ├── NGINX Ingress Controller
     ├── Cluster Autoscaler
     ├── Metrics Server
+    ├── External Secrets Operator
     ├── kube-prometheus-stack
     ├── Grafana Loki
     └── Java Demo Application
@@ -45,8 +49,6 @@ Argo CD (App of Apps)
             ├── EKS Pod Identity
             └── Application Load Balancer
 ```
-
-**Application repository:** [Demo_Java_app](https://github.com/BhupeshDahiya/Demo_Java_app)
 
 ---
 
@@ -89,7 +91,7 @@ Argo CD (App of Apps)
 |--------------------|-------------------------------------------------|
 | Cloud              | AWS                                             |
 | Compute            | Amazon EKS (Managed Node Groups)                |
-| Networking         | VPC, ALB (AWS Load Balancer Controller)         |
+| Networking         | VPC, ALB (AWS Load Balancer Controller), NGINX  |
 | Identity           | EKS Pod Identity                                |
 | IaC                | Terraform                                       |
 | GitOps             | Argo CD (App of Apps)                           |
@@ -97,7 +99,7 @@ Argo CD (App of Apps)
 | Container Registry | Amazon ECR                                      |
 | Observability      | kube-prometheus-stack + Grafana Loki            |
 | Application        | Spring Boot (Java 21)                           |
-| Database           | Amazon RDS (PostgreSQL 18.6)                    |
+| Database           | Amazon RDS (PostgreSQL 16)                      |
 | Secrets            | AWS Secrets Manager + External Secrets Operator |
 | Autoscaling        | HPA + Cluster Autoscaler                        |
 
@@ -105,16 +107,18 @@ Argo CD (App of Apps)
 
 ## Design Decisions
 
-| Decision                        | Choice                         | Why |
-|--------------------------------|--------------------------------|-----|
-| Workload identity              | EKS Pod Identity               | Simpler than IRSA, no per-cluster OIDC provider, AWS recommended for new clusters |
-| Infra vs cluster config        | Terraform + Argo CD            | Clear separation: Terraform owns cloud resources & IAM, Argo CD owns everything inside the cluster |
-| Delivery model                 | GitOps (App of Apps)           | Declarative, auditable, self-healing |
-| Compute                        | Managed Node Groups            | Required for Pod Identity Agent; simpler than self-managed nodes |
-| Ingress                        | AWS ALB + NGINX Ingress        | ALB for AWS-native external entry; NGINX for in-cluster routing |
-| Observability                  | Prometheus, Grafana & Loki     | Industry standard, full metrics & logs on dashboards |
+| Decision                        | Choice                              | Why |
+|--------------------------------|-------------------------------------|-----|
+| Workload identity              | EKS Pod Identity                    | Simpler than IRSA, no per-cluster OIDC provider, AWS recommended for new clusters |
+| Infra vs cluster config        | Terraform + Argo CD                 | Clear separation: Terraform owns cloud resources & IAM, Argo CD owns everything inside the cluster |
+| Delivery model                 | GitOps (App of Apps)                | Declarative, auditable, self-healing |
+| Compute                        | Managed Node Groups                 | Required for Pod Identity Agent; simpler than self-managed nodes |
+| Ingress                        | AWS ALB + NGINX Ingress             | ALB for AWS-native external entry; NGINX for in-cluster routing |
+| Observability                  | Prometheus, Grafana & Loki          | Industry standard, full metrics & logs on dashboards |
 | Database                       | Amazon RDS over in-cluster PostgreSQL | Managed service, automated backups, production-grade separation of concerns |
 | Secrets management             | ESO + Secrets Manager over k8s Secrets | Encrypted at rest, auditable, no plaintext credentials in the cluster |
+| Schema migrations              | Flyway init container               | Decoupled from app startup, runs once before the main container, no in-app migration logic needed |
+| ESO auth                       | Pod Identity ambient credentials    | No JWT/IRSA config needed; ESO pod inherits AWS credentials from Pod Identity agent automatically |
 
 ---
 
@@ -122,15 +126,20 @@ Argo CD (App of Apps)
 
 A complete production-style platform that continuously delivers a Spring Boot application to Amazon EKS using Infrastructure as Code and GitOps.
 
-The platform includes Terraform-managed networking and EKS, Argo CD for declarative delivery, EKS Pod Identity for secure AWS access, GitHub Actions CI/CD, HPA + Cluster Autoscaler, and observability with Prometheus, Grafana, and Loki.
+The platform includes Terraform-managed networking and EKS, Argo CD for declarative delivery, EKS Pod Identity for secure AWS access, GitHub Actions CI/CD, HPA + Cluster Autoscaler, and full observability with Prometheus, Grafana, and Loki.
 
-The application is intentionally simple so the focus remains on platform engineering and DevOps practices. It includes a full Postgres CRUD backend with Flyway-managed schema migrations, credentials injected securely via External Secrets Operator pulling from AWS Secrets Manager.
+The application includes a full Postgres CRUD backend with Flyway-managed schema migrations. DB credentials are never stored in the cluster — External Secrets Operator pulls them from AWS Secrets Manager at runtime and syncs them into a Kubernetes secret consumed by the app and Flyway init container.
+
+---
 
 ## Challenges & Lessons Learned
 
 - **Destroy order matters** — Resources created by the AWS Load Balancer Controller (ALBs, target groups, security groups) must be cleaned up before `terraform destroy`, otherwise destruction can hang or leave orphaned resources.
 - **Bridging Terraform and GitOps** — Some controllers need infrastructure values (such as VPC ID) that only exist after Terraform runs. Solved by rendering Argo CD Application manifests from Terraform templates.
 - **Cost control** — EKS control plane and NAT Gateway costs add up quickly, so the environment is designed to be safely created and destroyed daily.
+- **ESO + Pod Identity** — ESO's JWT auth mode is for IRSA. With Pod Identity, the correct approach is no explicit auth config — ESO picks up ambient AWS credentials injected by the Pod Identity agent automatically.
+- **ESO CRD size limit** — ESO v2.10.0 CRDs exceed the 262KB `last-applied-configuration` annotation limit. Fixed by enabling `ServerSideApply=true` in the Argo CD Application, which avoids writing the full manifest into the annotation.
+- **Sync wave ordering** — Deploying kube-prometheus-stack in parallel with NGINX caused the Grafana Ingress creation to fail because the NGINX admission webhook wasn't ready yet. Fixed with sync waves: NGINX at wave 1, kube-prometheus-stack at wave 2.
 
 ---
 
@@ -138,18 +147,28 @@ The application is intentionally simple so the focus remains on platform enginee
 
 ```text
 prod-java-on-eks/
-├── terraform/                  # Infrastructure as Code
-│   ├── backends/               # S3 backend configs (dev/staging/prod)
+├── .github/
+│   └── workflows/
+│       └── actions.yaml            # Terraform CI (fmt, validate, plan)
+├── terraform/                      # Infrastructure as Code
+│   ├── backends/                   # S3 backend configs (dev/staging/prod)
+│   ├── environments/               # tfvars per environment
 │   ├── eks.tf
 │   ├── vpc.tf
 │   ├── ecr.tf
-│   ├── iams.tf                 # Pod Identity roles & associations
+│   ├── rds.tf                      # RDS PostgreSQL + security group
+│   ├── secretsmanager.tf           # DB credentials secret
+│   ├── iams.tf                     # Pod Identity roles & associations
 │   ├── argocd.tf
 │   └── ...
 ├── gitops/
-│   ├── app of apps/            # Root Argo CD Application
-│   ├── apps/                   # Individual Argo CD Applications
-│   └── manifests/              # Kubernetes manifests / values
+│   ├── app of apps/                # Root Argo CD Application
+│   ├── apps/                       # Individual Argo CD Applications
+│   └── manifests/                  # Kubernetes manifests
+│       ├── external_secrets/       # ClusterSecretStore + ExternalSecret
+│       ├── java_demo_app/          # Deployment, HPA, Ingress, ServiceMonitor, Flyway ConfigMap
+│       ├── alb_ingress_app/        # ALB Ingress
+│       └── storage_class/          # gp3 StorageClass
 └── README.md
 ```
 
@@ -247,8 +266,8 @@ Approximate monthly cost for a small dev setup (us-east-1):
 | t3.medium nodes (x2)       | ~$60         |
 | NAT Gateway + data         | ~$35-50      |
 | ALB                        | ~$20+        |
-| ECR + misc                 | low          |
 | RDS db.t3.micro            | ~$15         |
+| ECR + misc                 | low          |
 
 **Tips to reduce cost:**
 - Scale the node group to 0 when not in use
@@ -267,7 +286,8 @@ The demo application is a Spring Boot service with Postgres CRUD and full observ
 - `GET /validate` — basic input validation
 - `POST/GET/PUT/DELETE /persons` — CRUD operations backed by RDS PostgreSQL
 - Prometheus metrics via Spring Actuator
-- Schema managed by Flyway migrations
+- Structured JSON logging for Loki ingestion
+- Schema managed by Flyway init container
 
 Source: [BhupeshDahiya/Demo_Java_app](https://github.com/BhupeshDahiya/Demo_Java_app)
 
@@ -277,6 +297,5 @@ Source: [BhupeshDahiya/Demo_Java_app](https://github.com/BhupeshDahiya/Demo_Java
 
 - NetworkPolicies / Pod Security Standards
 - AWS Budgets + cost anomaly detection
-- Terraform plan checks in CI for this repository
 - Multiple environment promotion (dev → staging → prod)
 - Optional tracing (Tempo or AWS X-Ray)
