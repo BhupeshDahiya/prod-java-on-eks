@@ -405,7 +405,9 @@ resource "aws_iam_role" "github_actions" {
         StringLike = {
           "token.actions.githubusercontent.com:sub" = [
             "repo:BhupeshDahiya/Demo_Java_app:*",
-            "repo:BhupeshDahiya/prod-java-on-eks:*"
+            "repo:BhupeshDahiya/prod-java-on-eks:*",
+            "repo:BhupeshDahiya@*/prod-java-on-eks@*:*",
+            "repo:BhupeshDahiya@*/Demo_Java_app@*:*"
           ]
         }
       }
