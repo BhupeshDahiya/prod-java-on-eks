@@ -21,7 +21,7 @@ module "eks" {
   endpoint_public_access = true
 
   # Optional: Adds the current caller identity as an administrator via cluster access entry
-  enable_cluster_creator_admin_permissions = true
+  enable_cluster_creator_admin_permissions = false
 
   vpc_id = module.vpc.vpc_id
   # Worker plane
@@ -43,4 +43,24 @@ module "eks" {
   }
   tags = local.common_tags
 
+  access_entries = {
+    github_actions = {
+      principal_arn = aws_iam_role.github_actions.arn
+      policy_associations = {
+        admin = {
+          policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = { type = "cluster" }
+        }
+      }
+    }
+    vpro_gitops = {
+      principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/vpro-gitops"
+      policy_associations = {
+        admin = {
+          policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = { type = "cluster" }
+        }
+      }
+    }
+  }
 }
