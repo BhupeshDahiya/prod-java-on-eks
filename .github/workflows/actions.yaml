@@ -22,11 +22,6 @@ jobs:
             - name: checkout code
               uses: actions/checkout@v7
 
-            - name: debug oidc token claims
-              run: |
-                IDTOKEN=$(curl -sLS "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" | jq -r '.value')
-                echo $IDTOKEN | cut -d'.' -f2 | base64 -d 2>/dev/null | jq .sub
-
             - name: setup Aws creds so that terraform can fetch state from s3
               uses: aws-actions/configure-aws-credentials@v6.3.0
               with:
