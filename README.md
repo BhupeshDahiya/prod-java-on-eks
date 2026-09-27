@@ -140,6 +140,7 @@ The application includes a full Postgres CRUD backend with Flyway-managed schema
 - **ESO + Pod Identity** — ESO's JWT auth mode is for IRSA. With Pod Identity, the correct approach is no explicit auth config — ESO picks up ambient AWS credentials injected by the Pod Identity agent automatically.
 - **ESO CRD size limit** — ESO v2.10.0 CRDs exceed the 262KB `last-applied-configuration` annotation limit. Fixed by enabling `ServerSideApply=true` in the Argo CD Application, which avoids writing the full manifest into the annotation.
 - **Sync wave ordering** — Deploying kube-prometheus-stack in parallel with NGINX caused the Grafana Ingress creation to fail because the NGINX admission webhook wasn't ready yet. Fixed with sync waves: NGINX at wave 1, kube-prometheus-stack at wave 2.
+- **GitHub Actions IAM permissions** — The `github-actions-role` needs broad permissions to run `terraform plan/apply` across all resources (IAM, EC2, EKS, ECR, S3, Secrets Manager, CloudWatch). For this project `AdministratorAccess` is attached, scoped safely by the OIDC trust policy to only these two repos. In production, use IAM Access Analyzer policy generation: attach `AdministratorAccess` temporarily, run a full `terraform plan`, then go to IAM → Access Analyzer → Policy Generation, select the role, and generate a least-privilege policy from the actual CloudTrail API calls made.
 
 ---
 

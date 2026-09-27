@@ -416,53 +416,9 @@ resource "aws_iam_role" "github_actions" {
   tags = local.common_tags
 }
 
-resource "aws_iam_role_policy" "github_actions" {
-  name = "github-actions-policy"
-  role = aws_iam_role.github_actions.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:GetAuthorizationToken"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-          "ecr:PutImage"
-        ]
-        Resource = aws_ecr_repository.java_demo_app.arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "eks:DescribeCluster"
-        ]
-        Resource = module.eks.cluster_arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          "arn:aws:s3:::backend-buck-tf",
-          "arn:aws:s3:::backend-buck-tf/*"
-        ]
-      }
-    ]
-  })
+resource "aws_iam_role_policy_attachment" "github_actions" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 # Pod idnentity and access management (IAM) role for the Loki
