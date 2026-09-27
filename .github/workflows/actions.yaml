@@ -3,20 +3,24 @@ on:
     push:
         branches:
         - dev
+    pull_request:
+      types: [closed]
+      branches:
+        - main
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-    infra_validation:
+    infra_validation_on_push_to_dev:
         runs-on: ubuntu-latest
         defaults:
             run:
                 working-directory: terraform
         steps:
             - name: checkout code
-              uses: actions/checkout@7
+              uses: actions/checkout@v7
 
             - name: setup Aws creds so that terraform can fetch state from s3
               uses: aws-actions/configure-aws-credentials@v6.3.0
@@ -27,7 +31,7 @@ jobs:
             - name: setup terraform cli
               uses: hashicorp/setup-terraform@v4
               with:
-                terraform_version: "1.15.3"
+                terraform_version: "1.16.4"
 
             - name: init the terraform
               run: terraform init -backend-config="backends/dev.hcl"
@@ -39,3 +43,30 @@ jobs:
             
             - name: plan to view proposed changes
               run: terraform plan -var="environment=dev" -var="project=java"
+
+    apply_infra_changes_on_PR_merge:
+        if: github.event.pull_request.merged == true
+        needs: infra_validation_on_push_to_dev
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: terraform
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v7
+
+            - name: setup Aws creds so that terraform can fetch state from s3
+              uses: aws-actions/configure-aws-credentials@v6.3.0
+              with:
+                role-to-assume: arn:aws:iam::${{ secrets.AWS_ID }}:role/github-actions-role
+                aws-region: us-east-1
+
+            - name: setup terraform cli
+              uses: hashicorp/setup-terraform@v4
+              with:
+                terraform_version: "1.16.4"
+
+            - name: apply the infra changes
+              run: |
+                terraform init -backend-config="backends/dev.hcl"
+                terraform apply -var="environment=dev" -var="project=java" -auto-approve
