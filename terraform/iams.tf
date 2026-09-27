@@ -405,7 +405,9 @@ resource "aws_iam_role" "github_actions" {
         StringLike = {
           "token.actions.githubusercontent.com:sub" = [
             "repo:BhupeshDahiya/Demo_Java_app:*",
-            "repo:BhupeshDahiya/prod-java-on-eks:*"
+            "repo:BhupeshDahiya/prod-java-on-eks:*",
+            "repo:BhupeshDahiya@*/prod-java-on-eks@*:*",
+            "repo:BhupeshDahiya@*/Demo_Java_app@*:*"
           ]
         }
       }
@@ -414,40 +416,9 @@ resource "aws_iam_role" "github_actions" {
   tags = local.common_tags
 }
 
-resource "aws_iam_role_policy" "github_actions" {
-  name = "github-actions-policy"
-  role = aws_iam_role.github_actions.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:GetAuthorizationToken"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-          "ecr:PutImage"
-        ]
-        Resource = aws_ecr_repository.java_demo_app.arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "eks:DescribeCluster"
-        ]
-        Resource = module.eks.cluster_arn
-      }
-    ]
-  })
+resource "aws_iam_role_policy_attachment" "github_actions" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 # Pod idnentity and access management (IAM) role for the Loki
