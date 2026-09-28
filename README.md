@@ -141,6 +141,8 @@ The application includes a full Postgres CRUD backend with Flyway-managed schema
 - **ESO CRD size limit** — ESO v2.10.0 CRDs exceed the 262KB `last-applied-configuration` annotation limit. Fixed by enabling `ServerSideApply=true` in the Argo CD Application, which avoids writing the full manifest into the annotation.
 - **Sync wave ordering** — Deploying kube-prometheus-stack in parallel with NGINX caused the Grafana Ingress creation to fail because the NGINX admission webhook wasn't ready yet. Fixed with sync waves: NGINX at wave 1, kube-prometheus-stack at wave 2.
 - **GitHub Actions IAM permissions** — The `github-actions-role` needs broad permissions to run `terraform plan/apply` across all resources (IAM, EC2, EKS, ECR, S3, Secrets Manager, CloudWatch). For this project `AdministratorAccess` is attached, scoped safely by the OIDC trust policy to only these two repos. In production, use IAM Access Analyzer policy generation: attach `AdministratorAccess` temporarily, run a full `terraform plan`, then go to IAM → Access Analyzer → Policy Generation, select the role, and generate a least-privilege policy from the actual CloudTrail API calls made.
+- **EKS access entry flip-flop** — `enable_cluster_creator_admin_permissions = true` dynamically creates a `cluster_creator` access entry tied to whoever runs Terraform — `vpro-gitops` locally, `github-actions-role` in CI. This caused constant destroy/recreate cycles and 409 conflicts on every CI run. Fixed by setting it to `false` and adding explicit, stable access entries for both identities in the EKS module `access_entries` block.
+- **Helm state drift in CI** — The ArgoCD Helm release exists in the cluster but not in a fresh CI Terraform state, causing `cannot re-use a name that is still in use` on apply. Fixed by running `terraform import helm_release.argoCD argocd/argocd` locally once to bring it into state, then pushing the stable state to S3 before CI runs.
 
 ---
 
@@ -181,7 +183,7 @@ prod-java-on-eks/
 - Terraform >= 1.5
 - kubectl
 - Helm (optional, for debugging)
-- An existing S3 bucket + DynamoDB table for Terraform state
+- An existing S3 bucket for Terraform state (S3 native locking via `use_lockfile = true`, no DynamoDB required)
 
 ---
 
